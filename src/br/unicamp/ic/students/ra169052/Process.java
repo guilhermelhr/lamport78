@@ -87,7 +87,7 @@ public class Process {
                     for(int i = 1; i < PEER_COUNT; i++){
                         Message queueMessage = queue[i];
                         if(queueMessage != null){
-                            lowestClock = Clock.GetLowestClock(clock, queueMessage.clock);
+                            lowestClock = Clock.GetLowestClock(lowestClock, queueMessage.clock);
                         }
                     }
 
