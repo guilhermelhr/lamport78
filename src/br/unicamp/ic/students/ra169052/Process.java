@@ -78,32 +78,50 @@ public class Process {
                 if(sendersLastMessage != null && sendersLastMessage.action != Message.Action.REQUEST){
                     queue[senderPid] = message;
                 }
-
-                //if i have requested access, test if it's my turn
-                Message myLastMessage = queue[clock.pid];
-                if(myLastMessage != null && myLastMessage.action == Message.Action.REQUEST){
-                    //find lowest clock
-                    Clock lowestClock = queue[0].clock;
-                    for(int i = 1; i < PEER_COUNT; i++){
-                        Message queueMessage = queue[i];
-                        if(queueMessage != null){
-                            lowestClock = Clock.GetLowestClock(lowestClock, queueMessage.clock);
-                        }
-                    }
-
-                    //test if the lowest clock is mine
-                    if(lowestClock.pid == clock.pid){
-                        //work on critical region
-                        doProcess();
-                        //release critical region
-                        release();
-                    }
-                }
                 break;
             case RELEASE:
                 queue[senderPid] = message;
                 break;
         }
+
+        if(requestedAccess() && canEnterCRegion()){
+            //work on critical region
+            doProcess();
+            //release critical region
+            release();
+        }
+    }
+
+    /**
+     * Check if this process issued a request and is waiting responses
+     * @return true if access was requested
+     */
+    private boolean requestedAccess(){
+        Message myLastMessage = queue[clock.pid];
+        return myLastMessage != null && myLastMessage.action == Message.Action.REQUEST;
+    }
+
+    /**
+     * Check if this process' request is the message with the lowest clock
+     * out of everyones' last message.
+     * @return true if process may enter critical region
+     */
+    private boolean canEnterCRegion() {
+        //find lowest clock
+        Clock lowestClock = queue[0].clock;
+        for(int i = 1; i < PEER_COUNT; i++){
+            Message queueMessage = queue[i];
+            if(queueMessage != null){
+                lowestClock = Clock.GetLowestClock(lowestClock, queueMessage.clock);
+            }
+        }
+
+        //test if the lowest clock is mine
+        if(lowestClock.pid == clock.pid){
+            return true;
+        }
+
+        return false;
     }
 
     /**

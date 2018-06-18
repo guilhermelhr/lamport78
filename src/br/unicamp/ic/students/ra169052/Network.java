@@ -62,6 +62,12 @@ public class Network {
         return peers.size();
     }
 
+    /**
+     * Sends message to every peer on the network except
+     * the one with the specified pid
+     * @param message
+     * @param pid do not send message to this pid
+     */
     public void broadcastExcept(Message message, int pid) {
         int i = 0;
         for(LinkedList<Message> messageQueue : messageQueues){
